@@ -16,6 +16,14 @@
     <div class="error">
         <p>Invalid City Name</p>
     </div>
+    <div class="slider-box">
+        <p class="imperial">Imperial</p>
+        <label class="switch">
+            <input id="units-checkbox" type="checkbox" value="metric">
+            <span class="slider round"></span>
+        </label>
+        <p class="metric">Metric</p>
+    </div>
     <div class="weather">
         <img src="images/rain.png" class="weather-icon">
         <h1 class="temp">°C</h1>
@@ -41,27 +49,45 @@
 
 <script>
 
+const unitsSwitch = document.getElementById("units-checkbox");
+let units = ""
+let degrees = ""
+let windSpeed = ""
+
+
+
 const apiKey = "696681189e2497048b6c1b5b35efa028";
-const apiUrl = "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
+const apiUrl = "https://api.openweathermap.org/data/2.5/weather?";
+
+
 const searchBox = document.querySelector(".search input")
 const searchBtn = document.querySelector(".search button")
 const weatherIcon = document.querySelector(".weather-icon")
 
-async function checkWeather(city){
-    const response = await fetch(apiUrl + city + `&appid=${apiKey}`);
+async function checkWeather(city, units){
+    if (unitsSwitch.checked) {
+        units = "metric"
+        degrees ="°c"
+        windSpeed ="km/h"
+    } else {
+        units = "imperial"
+        degrees = "°f"
+        windSpeed = "mi/h"
+    }
+    const responseImperial = await fetch(apiUrl + `units=${units}` + `&q=${city}` + `&appid=${apiKey}`);
 
-    if(response.status == 404) {
+    if(responseImperial.status == 404) {
         document.querySelector(".error").style.display = "block";
         document.querySelector(".weather").style.display = "none";
     }
-    else{ var data = await response.json();
+    else{ var data = await responseImperial.json();
 
     document.querySelector(".error").style.display = "none";
-
+    
     document.querySelector(".city").innerHTML = data.name;
-    document.querySelector(".temp").innerHTML = Math.round(data.main.temp) + "°c";
+    document.querySelector(".temp").innerHTML = Math.round(data.main.temp) + `${degrees}`;
     document.querySelector(".humidity").innerHTML = data.main.humidity + "%";
-    document.querySelector(".wind").innerHTML = data.wind.speed + " km/h";
+    document.querySelector(".wind").innerHTML = data.wind.speed + " " + `${windSpeed}`;
 
     if(data.weather[0].main =="Clouds") {
         weatherIcon.src = "images/clouds.png";
@@ -81,11 +107,17 @@ async function checkWeather(city){
 
     document.querySelector(".weather").style.display = "block";
 
+    if (unitsSwitch.checked) {
+    console.log(unitsSwitch.value)
+    } else {
+        console.log("imperial")
+    }
+    console.log(responseImperial)
     }
 }
 
 searchBtn.addEventListener("click", ()=>{
-    checkWeather(searchBox.value);
+    checkWeather(searchBox.value, units);
 })
 
 checkWeather();

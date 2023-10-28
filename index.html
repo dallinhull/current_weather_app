@@ -48,13 +48,12 @@
 </div>
 
 <script>
+// Declare variables
 
 const unitsSwitch = document.getElementById("units-checkbox");
 let units = ""
 let degrees = ""
 let windSpeed = ""
-
-
 
 const apiKey = "696681189e2497048b6c1b5b35efa028";
 const apiUrl = "https://api.openweathermap.org/data/2.5/weather?";
@@ -65,21 +64,26 @@ const searchBtn = document.querySelector(".search button")
 const weatherIcon = document.querySelector(".weather-icon")
 
 async function checkWeather(city, units){
+    // Determine and declare unit type
     if (unitsSwitch.checked) {
         units = "metric"
-        degrees ="°c"
+        degrees ="°C"
         windSpeed ="km/h"
     } else {
         units = "imperial"
-        degrees = "°f"
+        degrees = "°F"
         windSpeed = "mi/h"
     }
+
+    // Retrieve api JSON
     const responseImperial = await fetch(apiUrl + `units=${units}` + `&q=${city}` + `&appid=${apiKey}`);
 
+    // Account for search or other errors
     if(responseImperial.status == 404) {
         document.querySelector(".error").style.display = "block";
         document.querySelector(".weather").style.display = "none";
     }
+    // Identify and assign values in .weather div
     else{ var data = await responseImperial.json();
 
     document.querySelector(".error").style.display = "none";
@@ -87,7 +91,12 @@ async function checkWeather(city, units){
     document.querySelector(".city").innerHTML = data.name;
     document.querySelector(".temp").innerHTML = Math.round(data.main.temp) + `${degrees}`;
     document.querySelector(".humidity").innerHTML = data.main.humidity + "%";
-    document.querySelector(".wind").innerHTML = data.wind.speed + " " + `${windSpeed}`;
+
+    if (units == "metric") {
+        document.querySelector(".wind").innerHTML = ((data.wind.speed * 3.6).toFixed(2)) + " " + `${windSpeed}`;
+    } else {
+        document.querySelector(".wind").innerHTML = (data.wind.speed) + " " + `${windSpeed}`;  
+    }
 
     if(data.weather[0].main =="Clouds") {
         weatherIcon.src = "images/clouds.png";
@@ -116,6 +125,7 @@ async function checkWeather(city, units){
     }
 }
 
+// Activate search on click
 searchBtn.addEventListener("click", ()=>{
     checkWeather(searchBox.value, units);
 })
